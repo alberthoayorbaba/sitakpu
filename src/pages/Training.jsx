@@ -5,7 +5,13 @@ export default function Training() {
   const [data, setData] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [editItem, setEditItem] = useState(null);
-  const [form, setForm] = useState({ title: "", participants: "" });
+  const [form, setForm] = useState({
+    title: "",
+    participants: "",
+    date: "",
+    location: "",
+    status: "",
+  });
 
   useEffect(() => {
     fetchData();
@@ -16,13 +22,18 @@ export default function Training() {
       .from("trainings")
       .select("*")
       .order("id", { ascending: true });
-
     if (!error) setData(trainings);
   };
 
   const openAdd = () => {
     setEditItem(null);
-    setForm({ title: "", participants: "" });
+    setForm({
+      title: "",
+      participants: "",
+      date: "",
+      location: "",
+      status: "",
+    });
     setIsOpen(true);
   };
 
@@ -34,14 +45,10 @@ export default function Training() {
 
   const saveData = async () => {
     if (editItem) {
-      await supabase
-        .from("trainings")
-        .update(form)
-        .eq("id", editItem.id);
+      await supabase.from("trainings").update(form).eq("id", editItem.id);
     } else {
       await supabase.from("trainings").insert([form]);
     }
-
     setIsOpen(false);
     fetchData();
   };
@@ -53,8 +60,7 @@ export default function Training() {
 
   return (
     <div className="min-h-screen bg-[#eef3fb] p-8">
-      <div className="bg-white rounded-2xl shadow-lg border-t-4 border-[#1b3b6f] p-8 max-w-5xl mx-auto">
-
+      <div className="bg-white rounded-2xl shadow-lg border-t-4 border-[#1b3b6f] p-8 max-w-6xl mx-auto">
         <h2 className="text-2xl font-bold text-[#1b3b6f] mb-6 text-center">
           Modul Pelatihan Petugas Pemilu
         </h2>
@@ -71,22 +77,45 @@ export default function Training() {
             <tr>
               <th className="p-3">No</th>
               <th className="p-3 text-left">Judul Pelatihan</th>
+              <th className="p-3 text-center">Tanggal</th>
+              <th className="p-3 text-center">Lokasi</th>
               <th className="p-3 text-center">Jumlah Peserta</th>
+              <th className="p-3 text-center">Status</th>
               <th className="p-3 text-center">Aksi</th>
             </tr>
           </thead>
 
           <tbody>
             {data.map((item, i) => (
-              <tr key={item.id} className="border-b hover:bg-[#f3f6ff] transition">
+              <tr
+                key={item.id}
+                className="border-b hover:bg-[#f3f6ff] transition"
+              >
                 <td className="p-3 text-center">{i + 1}</td>
                 <td className="p-3">{item.title}</td>
+                <td className="p-3 text-center">{item.date}</td>
+                <td className="p-3 text-center">{item.location}</td>
                 <td className="p-3 text-center">{item.participants}</td>
+                <td
+                  className={`p-3 text-center font-medium ${
+                    item.status === "Selesai"
+                      ? "text-green-600"
+                      : "text-yellow-600"
+                  }`}
+                >
+                  {item.status}
+                </td>
                 <td className="p-3 text-center space-x-2">
-                  <button onClick={() => openEdit(item)} className="text-blue-600 hover:underline">
+                  <button
+                    onClick={() => openEdit(item)}
+                    className="text-blue-600 hover:underline"
+                  >
                     Edit
                   </button>
-                  <button onClick={() => deleteData(item.id)} className="text-red-600 hover:underline">
+                  <button
+                    onClick={() => deleteData(item.id)}
+                    className="text-red-600 hover:underline"
+                  >
                     Hapus
                   </button>
                 </td>
@@ -110,22 +139,53 @@ export default function Training() {
               />
 
               <input
-                className="w-full border p-2 rounded mb-4"
+                type="date"
+                className="w-full border p-2 rounded mb-3"
+                value={form.date}
+                onChange={(e) => setForm({ ...form, date: e.target.value })}
+              />
+
+              <input
+                className="w-full border p-2 rounded mb-3"
+                placeholder="Lokasi / Tempat"
+                value={form.location}
+                onChange={(e) => setForm({ ...form, location: e.target.value })}
+              />
+
+              <input
+                className="w-full border p-2 rounded mb-3"
                 type="number"
                 placeholder="Jumlah Peserta"
                 value={form.participants}
-                onChange={(e) => setForm({ ...form, participants: e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, participants: e.target.value })
+                }
               />
 
+              <select
+                className="w-full border p-2 rounded mb-4"
+                value={form.status}
+                onChange={(e) => setForm({ ...form, status: e.target.value })}
+              >
+                <option value="">Pilih Status</option>
+                <option value="Selesai">Selesai</option>
+                <option value="Belum Dilaksanakan">Belum Dilaksanakan</option>
+              </select>
+
               <div className="flex justify-end space-x-2">
-                <button onClick={() => setIsOpen(false)} className="px-3 py-1 border rounded">
+                <button
+                  onClick={() => setIsOpen(false)}
+                  className="px-3 py-1 border rounded"
+                >
                   Batal
                 </button>
-                <button onClick={saveData} className="px-3 py-1 bg-[#1b3b6f] text-white rounded">
+                <button
+                  onClick={saveData}
+                  className="px-3 py-1 bg-[#1b3b6f] text-white rounded"
+                >
                   Simpan
                 </button>
               </div>
-
             </div>
           </div>
         )}
